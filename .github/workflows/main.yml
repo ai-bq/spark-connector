@@ -8,15 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['11', '8']
     steps:
       - name: Checkout the project
         uses: actions/checkout@v2
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jdk }}
       - name: Build the project
         run: cd connector && sbt package
       - name: Upload the build artifact
         uses: actions/upload-artifact@v3
         with:
-          name: build-jar-file
+          name: build-jar-file-${{ matrix.jdk }}
           path: /home/runner/work/spark-connector/spark-connector/connector/target/scala-2.12/spark-vertica-connector_2.12-*.jar
   run-analysis:
     runs-on: ubuntu-latest
