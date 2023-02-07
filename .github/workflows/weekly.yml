@@ -29,6 +29,9 @@ jobs:
   run-spark-integration-tests-json:
     name: Run regression tests using JSON export
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['11', '8']
     needs: build
     strategy:
       fail-fast: false
@@ -67,6 +70,9 @@ jobs:
   run-spark-integration-tests-vertica-10:
     name: Run integration tests against Vertica 10
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['11', '8']
     needs: build
     strategy:
       fail-fast: false
@@ -104,6 +110,9 @@ jobs:
         run: cd docker && docker-compose down
   run-integration-tests-s3:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['11', '8']
     needs: build
     steps:
       - name: Checkout the project
@@ -137,6 +146,9 @@ jobs:
         run: cd docker && docker-compose down
   run-integration-tests-gcs:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['11', '8']
     needs: build
     steps:
       - name: Checkout the project
