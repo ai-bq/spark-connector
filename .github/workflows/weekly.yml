@@ -139,7 +139,6 @@ jobs:
         run: cd docker && docker-compose down
   run-integration-tests-gcs:
     runs-on: ubuntu-latest
-    strategy:
     needs: build
     steps:
       - name: Checkout the project
