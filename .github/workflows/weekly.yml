@@ -29,9 +29,6 @@ jobs:
   run-spark-integration-tests-json:
     name: Run regression tests using JSON export
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        jdk: ['11', '8']
     needs: build
     strategy:
       fail-fast: false
@@ -40,6 +37,7 @@ jobs:
                    { spark: "[3.1.0, 3.2.0)", hadoop: "3.2.0" },
                    { spark: "[3.2.0, 3.3.0)", hadoop: "3.3.1" },
                    { spark: "[3.3.0, 3.4.0)", hadoop: "3.3.2" } ]
+        jdk: ['11', '8']
     steps:
       - name: Checkout the project
         uses: actions/checkout@v2
@@ -70,9 +68,6 @@ jobs:
   run-spark-integration-tests-vertica-10:
     name: Run integration tests against Vertica 10
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        jdk: ['11', '8']
     needs: build
     strategy:
       fail-fast: false
@@ -81,6 +76,7 @@ jobs:
                    { spark: "[3.1.0, 3.2.0)", hadoop: "3.2.0" },
                    { spark: "[3.2.0, 3.3.0)", hadoop: "3.3.1" },
                    { spark: "[3.3.0, 3.4.0)", hadoop: "3.3.2" } ]
+        jdk: ['11', '8']
     steps:
       - name: Checkout the project
         uses: actions/checkout@v2
