@@ -9,15 +9,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: ['11', '8']
     steps:
       - name: Checkout the project
         uses: actions/checkout@v2
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jdk }}
       - name: Build the project
         run: cd connector && sbt package
       - name: Upload the build artifact
         uses: actions/upload-artifact@v3
         with:
-          name: build-jar-file
+          name: build-jar-file-${{ matrix.jdk }}
           path: /home/runner/work/spark-connector/spark-connector/connector/target/scala-2.12/spark-vertica-connector_2.12-*.jar
   run-spark-integration-tests-json:
     name: Run regression tests using JSON export
@@ -30,6 +37,7 @@ jobs:
                    { spark: "[3.1.0, 3.2.0)", hadoop: "3.2.0" },
                    { spark: "[3.2.0, 3.3.0)", hadoop: "3.3.1" },
                    { spark: "[3.3.0, 3.4.0)", hadoop: "3.3.2" } ]
+        jdk: ['11', '8']
     steps:
       - name: Checkout the project
         uses: actions/checkout@v2
@@ -44,7 +52,7 @@ jobs:
       - name: Download the build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-jar-file
+          name: build-jar-file-${{ matrix.jdk }}
           path: ./functional-tests/lib/
       - name: Wait for Vertica to be available
         uses: nick-invision/retry@v2
@@ -68,6 +76,7 @@ jobs:
                    { spark: "[3.1.0, 3.2.0)", hadoop: "3.2.0" },
                    { spark: "[3.2.0, 3.3.0)", hadoop: "3.3.1" },
                    { spark: "[3.3.0, 3.4.0)", hadoop: "3.3.2" } ]
+        jdk: ['11', '8']
     steps:
       - name: Checkout the project
         uses: actions/checkout@v2
@@ -82,7 +91,7 @@ jobs:
       - name: Download the build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-jar-file
+          name: build-jar-file-${{ matrix.jdk }}
           path: ./functional-tests/lib/
       - name: Wait for Vertica to be available
         uses: nick-invision/retry@v2
@@ -104,7 +113,7 @@ jobs:
       - name: Download the build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-jar-file
+          name: build-jar-file-11
           path: ./functional-tests/lib/
       - name: Add config options to application.conf
         run: cd functional-tests && ./pipeline-s3-config.sh
@@ -137,7 +146,7 @@ jobs:
       - name: Download the build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-jar-file
+          name: build-jar-file-11
           path: ./functional-tests/lib/
       - name: Add config options to application.conf
         run: cd functional-tests && ./pipeline-gcs-config.sh
@@ -164,22 +173,3 @@ jobs:
         run: docker exec -w /spark-connector/functional-tests docker_client_1 sbt run
       - name: Remove docker containers
         run: cd docker && docker-compose down
-  slack-workflow-status:
-    name: Post Workflow Status To Slack
-    runs-on: ubuntu-latest
-    needs: [build,
-            run-spark-integration-tests-json,
-            run-spark-integration-tests-vertica-10,
-            run-integration-tests-gcs,
-            run-integration-tests-s3,]
-    if: failure()
-    steps:
-      - name: Slack Workflow Notification
-        uses: Gamesight/slack-workflow-status@master
-        if: always()
-        with:
-          repo_token: ${{secrets.GITHUB_TOKEN}}
-          slack_webhook_url: ${{secrets.SLACK_CHANNEL_WEBHOOK}}
-          name: 'Weekly tests failed'
-          icon_emoji: ':sadge:'
-          include_jobs: false
